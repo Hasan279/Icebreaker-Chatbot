@@ -1,12 +1,11 @@
 """Configuration settings for the Icebreaker Bot."""
 
-# IBM watsonx.ai settings
-WATSONX_URL = "https://us-south.ml.cloud.ibm.com"
-WATSONX_PROJECT_ID = "skills-network"
+# Ollama settings
+OLLAMA_BASE_URL = "http://localhost:11434"
 
 # Model settings
-LLM_MODEL_ID = "ibm/granite-4-h-small"
-EMBEDDING_MODEL_ID = "ibm/slate-125m-english-rtrvr-v2"
+LLM_MODEL_ID = "phi3.5"
+EMBEDDING_MODEL_ID = "BAAI/bge-small-en-v1.5"  # HuggingFace embedding model (runs locally)
 
 # ProxyCurl API settings
 PROXYCURL_API_KEY = ""  # Replace with your API key
