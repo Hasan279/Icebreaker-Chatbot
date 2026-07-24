@@ -31,15 +31,41 @@ def process_linkedin(linkedin_url, api_key=None, mock=False):
         api_key: ProxyCurl API key. Required if mock is False.
         mock: If True, loads mock data from a premade JSON file instead of using the API.
     """
-    # TODO: Implement this function to process a LinkedIn profile
-    # 1. Extract the profile data using extract_linkedin_profile
-    # 2. Split the data into nodes using split_profile_data
-    # 3. Create a vector database using create_vector_database
-    # 4. Verify embeddings using verify_embeddings
-    # 5. Generate initial facts using generate_initial_facts
-    # 6. Start the chatbot interface
-    
-    print("Function not yet implemented.")
+    # 1. Extract the profile data
+    print("\n[*] Extracting LinkedIn profile data...")
+    profile_data = extract_linkedin_profile(linkedin_url, api_key=api_key, mock=mock)
+    if not profile_data:
+        print("[ERROR] Failed to extract profile data. Exiting.")
+        return
+
+    # 2. Split into nodes
+    print("[*] Splitting profile data into chunks...")
+    nodes = split_profile_data(profile_data)
+    if not nodes:
+        print("[ERROR] Failed to split profile data. Exiting.")
+        return
+
+    # 3. Create vector database
+    print("[*] Building vector database (this may take a moment)...")
+    index = create_vector_database(nodes)
+    if index is None:
+        print("[ERROR] Failed to create vector database. Exiting.")
+        return
+
+    # 4. Verify embeddings
+    print("[*] Verifying embeddings...")
+    verify_embeddings(index)
+
+    # 5. Generate initial facts
+    print("\n[*] Generating interesting facts about the profile...\n")
+    facts = generate_initial_facts(index)
+    print("=" * 60)
+    print(facts)
+    print("=" * 60)
+
+    # 6. Start chatbot interface
+    chatbot_interface(index)
+
 
 def chatbot_interface(index):
     """
@@ -48,14 +74,25 @@ def chatbot_interface(index):
     Args:
         index: VectorStoreIndex containing the LinkedIn profile data.
     """
-    # TODO: Implement this function to create a chatbot interface
-    # 1. Display instructions to the user
-    # 2. Enter a loop to process user queries
-    # 3. Process each query using answer_user_query
-    # 4. Display the answer to the user
-    # 5. Exit when the user types 'exit', 'quit', or 'bye'
-    
-    print("Chatbot interface not yet implemented.")
+    print("\n[Icebreaker Chatbot] Ready! Type 'exit', 'quit', or 'bye' to stop.\n")
+    while True:
+        try:
+            user_input = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!")
+            break
+
+        if not user_input:
+            continue
+
+        if user_input.lower() in {"exit", "quit", "bye"}:
+            print("Goodbye!")
+            break
+
+        print("Thinking...\n")
+        response = answer_user_query(index, user_input)
+        print(f"Bot: {response}\n")
+
 
 def main():
     """Main function to run the Icebreaker Bot."""
@@ -63,32 +100,33 @@ def main():
     parser.add_argument('--url', type=str, help='LinkedIn profile URL')
     parser.add_argument('--api-key', type=str, help='ProxyCurl API key')
     parser.add_argument('--mock', action='store_true', help='Use mock data instead of API')
-    parser.add_argument('--model', type=str, help='LLM model to use (e.g., "meta-llama/llama-3-3-70b-instruct")')
+    parser.add_argument('--model', type=str, help='Ollama model to use (e.g., "phi3.5", "llama3")')
     
     args = parser.parse_args()
-    
-    # Use command line arguments or prompt user for input
-    linkedin_url = args.url or input("Enter LinkedIn profile URL (or press Enter to use mock data): ")
-    use_mock = args.mock or not linkedin_url
-    
+
     if args.model:
-        # TODO: Import and use change_llm_model when implemented
-        # from modules.llm_interface import change_llm_model
-        # change_llm_model(args.model)
-        pass
-    
+        from modules.llm_interface import change_llm_model
+        change_llm_model(args.model)
+
+    # Use command line arguments or prompt user for input
+    # Skip URL prompt entirely when --mock flag is set
+    if args.mock:
+        linkedin_url = args.url or ""
+        use_mock = True
+    else:
+        linkedin_url = args.url or input("Enter LinkedIn profile URL (or press Enter to use mock data): ")
+        use_mock = not linkedin_url
+
     api_key = args.api_key or config.PROXYCURL_API_KEY
-    
+
     if not use_mock and not api_key:
         api_key = input("Enter ProxyCurl API key: ")
-    
+
     # Use a default URL for mock data if none provided
     if use_mock and not linkedin_url:
         linkedin_url = "https://www.linkedin.com/in/leonkatsnelson/"
-    
-    # TODO: Uncomment when process_linkedin is implemented
-    # process_linkedin(linkedin_url, api_key, mock=use_mock)
-    print("This is a starter template. Implement the missing functions to make it work!")
+
+    process_linkedin(linkedin_url, api_key, mock=use_mock)
 
 if __name__ == "__main__":
     main()
