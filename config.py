@@ -1,31 +1,30 @@
-"""Configuration settings for the Icebreaker Bot."""
+"""Configuration for the Icebreaker Bot."""
 
-# IBM watsonx.ai settings
-WATSONX_URL = "https://us-south.ml.cloud.ibm.com"
-WATSONX_PROJECT_ID = "skills-network"
+import os
+from dotenv import load_dotenv
 
-# Model settings
-LLM_MODEL_ID = "ibm/granite-4-h-small"
-EMBEDDING_MODEL_ID = "ibm/slate-125m-english-rtrvr-v2"
+load_dotenv()
 
-# ProxyCurl API settings
-PROXYCURL_API_KEY = ""  # Replace with your API key
+OLLAMA_BASE_URL = "http://localhost:11434"
 
-# Mock data URL
+LLM_MODEL_ID = "phi3.5"
+EMBEDDING_MODEL_ID = "BAAI/bge-small-en-v1.5"
+
+HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN", "")
+PROXYCURL_API_KEY = os.getenv("PROXYCURL_API_KEY", "")
+
 MOCK_DATA_URL = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/ZRe59Y_NJyn3hZgnF1iFYA/linkedin-profile-data.json"
 
-# Query settings
 SIMILARITY_TOP_K = 5
 TEMPERATURE = 0.0
 MAX_NEW_TOKENS = 500
+CONTEXT_WINDOW = 4096
 MIN_NEW_TOKENS = 1
 TOP_K = 50
 TOP_P = 1
 
-# Node settings
 CHUNK_SIZE = 500
 
-# LLM prompt templates
 INITIAL_FACTS_TEMPLATE = """
 You are an AI assistant that provides detailed answers based on the provided context.
 

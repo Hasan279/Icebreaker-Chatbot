@@ -1,56 +1,82 @@
-"""Module for interfacing with IBM watsonx.ai LLMs."""
+"""Ollama LLM and HuggingFace Inference API embedding interfaces."""
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, List
 
-from llama_index.embeddings.ibm import WatsonxEmbeddings
-from llama_index.llms.ibm import WatsonxLLM
-from ibm_watsonx_ai.foundation_models.utils.enums import DecodingMethods
+import numpy as np
+from huggingface_hub import InferenceClient
+from llama_index.core.embeddings import BaseEmbedding
+from llama_index.llms.ollama import Ollama
+from pydantic import PrivateAttr
 
 import config
 
 logger = logging.getLogger(__name__)
 
-def create_watsonx_embedding() -> WatsonxEmbeddings:
-    """Creates an IBM Watsonx Embedding model for vector representation.
-    
-    Returns:
-        WatsonxEmbeddings model.
-    """
-    # TODO: Implement this function to create a Watsonx embedding model
-    # 1. Create and return a WatsonxEmbeddings model using config values
-    
-    pass  # Replace with your implementation
 
-def create_watsonx_llm(
+class HFInferenceEmbedding(BaseEmbedding):
+    """Synchronous wrapper around the HuggingFace Inference API.
+
+    Uses InferenceClient directly to avoid asyncio event-loop conflicts
+    with Gradio.
+    """
+
+    _client: InferenceClient = PrivateAttr()
+
+    def __init__(self, model_name: str, token: str, **kwargs: Any) -> None:
+        super().__init__(model_name=model_name, **kwargs)
+        self._client = InferenceClient(model=model_name, token=token)
+
+    def _embed(self, text: str) -> List[float]:
+        result = self._client.feature_extraction(text)
+        if isinstance(result, np.ndarray):
+            return result.flatten().tolist()
+        return list(result)
+
+    def _get_text_embedding(self, text: str) -> List[float]:
+        return self._embed(text)
+
+    def _get_query_embedding(self, query: str) -> List[float]:
+        return self._embed(query)
+
+    async def _aget_text_embedding(self, text: str) -> List[float]:
+        return self._embed(text)
+
+    async def _aget_query_embedding(self, query: str) -> List[float]:
+        return self._embed(query)
+
+
+def create_huggingface_embedding() -> HFInferenceEmbedding:
+    """Return an HFInferenceEmbedding using the configured model and token."""
+    logger.info("Creating HuggingFace Inference API embedding: %s", config.EMBEDDING_MODEL_ID)
+    return HFInferenceEmbedding(
+        model_name=config.EMBEDDING_MODEL_ID,
+        token=config.HUGGINGFACE_API_TOKEN,
+    )
+
+
+def create_ollama_llm(
     temperature: float = 0.0,
     max_new_tokens: int = 500,
-    decoding_method: str = "sample"
-) -> WatsonxLLM:
-    """Creates an IBM Watsonx LLM for generating responses.
-    
-    Args:
-        temperature: Temperature for controlling randomness in generation (0.0 to 1.0).
-        max_new_tokens: Maximum number of new tokens to generate.
-        decoding_method: Decoding method to use (sample, greedy).
-        
-    Returns:
-        WatsonxLLM model.
-    """
-    # TODO: Implement this function to create a Watsonx LLM
-    # 1. Define additional parameters for the LLM
-    # 2. Create and return a WatsonxLLM model using config values and parameters
-    
-    pass  # Replace with your implementation
+) -> Ollama:
+    """Return an Ollama LLM instance with the configured model and context window."""
+    logger.info("Creating Ollama LLM: %s", config.LLM_MODEL_ID)
+    return Ollama(
+        model=config.LLM_MODEL_ID,
+        base_url=config.OLLAMA_BASE_URL,
+        temperature=temperature,
+        request_timeout=120.0,
+        context_window=config.CONTEXT_WINDOW,
+        additional_kwargs={"num_ctx": config.CONTEXT_WINDOW},
+    )
+
 
 def change_llm_model(new_model_id: str) -> None:
-    """Change the LLM model to use.
-    
-    Args:
-        new_model_id: New LLM model ID to use.
-    """
-    # TODO: Implement this function to change the LLM model
-    # 1. Update the LLM model ID in the config
-    # 2. Log the change
-    
-    pass  # Replace with your implementation
+    """Update the global LLM model ID at runtime."""
+    config.LLM_MODEL_ID = new_model_id
+    logger.info("LLM model changed to: %s", new_model_id)
+
+
+create_ollama_embedding = create_huggingface_embedding
+create_watsonx_embedding = create_huggingface_embedding
+create_watsonx_llm = create_ollama_llm

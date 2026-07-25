@@ -1,127 +1,94 @@
-# LinkedIn Icebreaker Bot
+# Icebreaker Chatbot
 
-An AI-powered tool that generates personalized icebreakers and conversation starters based on LinkedIn profiles. This project uses IBM watsonx.ai and LlamaIndex to create a tool that helps make introductions more personal and engaging.
+A RAG-powered chatbot that analyzes LinkedIn profiles and generates personalized icebreakers. It extracts profile data, builds a vector index, and answers questions about the person using retrieval-augmented generation.
 
-## Project Overview
-
-Imagine you're heading to a big networking event, surrounded by potential employers and industry leaders. You want to make a great first impression, but you're struggling to come up with more than the usual, "What do you do?"
-
-This AI icebreaker bot does the research for you. You input a name, and within seconds, the bot searches LinkedIn, generating personalized icebreakers based on someone's career highlights, interests, and even fun facts.
-
-## Features
-
-- Extract LinkedIn profile data using ProxyCurl API or mock data
-- Process and index the data using LlamaIndex and IBM watsonx embeddings
-- Generate interesting facts about a person's career or education
-- Answer specific questions about the LinkedIn profile
-- Interact with the bot through a command-line interface or a Gradio web UI
-
-## Project Structure
+## Architecture
 
 ```
-icebreaker_bot/
-├── requirements.txt           # Dependencies
-├── config.py                  # Configuration settings
-├── modules/
-│   ├── __init__.py
-│   ├── data_extraction.py     # LinkedIn profile data extraction
-│   ├── data_processing.py     # Data splitting and indexing
-│   ├── llm_interface.py       # LLM setup and interaction
-│   └── query_engine.py        # Query processing and response generation
-├── app.py                     # Gradio interface
-└── main.py                    # Main script to run without Gradio
+LinkedIn URL ──► ProxyCurl API ──► Profile JSON ──► Chunking ──► Embeddings (HuggingFace API) ──► Vector Index
+                                                                                                       │
+                                                                                                       ▼
+                                                                                            Query Engine (Ollama LLM)
+                                                                                                       │
+                                                                                                       ▼
+                                                                                              Answer / Facts
 ```
 
-## Getting Started
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| LLM | Ollama (phi3.5, llama3, mistral, gemma2) |
+| Embeddings | HuggingFace Inference API (BAAI/bge-small-en-v1.5) |
+| RAG Framework | LlamaIndex |
+| Web UI | Gradio |
+| Profile Data | ProxyCurl API or mock JSON |
+
+## Setup
 
 ### Prerequisites
 
-- Python 3.11+
-- A ProxyCurl API key (optional - you can use mock data)
+- [Ollama](https://ollama.ai/) installed and running with a model pulled:
+  ```bash
+  ollama pull phi3.5
+  ```
+- A [HuggingFace API token](https://huggingface.co/settings/tokens) with inference permissions
+- (Optional) A [ProxyCurl API key](https://nubela.co/proxycurl/) for real LinkedIn data
 
 ### Installation
 
-1. Clone the repository:
 ```bash
-git clone https://github.com/HaileyTQuach/icebreaker.git
-cd icebreaker
-```
-
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
+git clone https://github.com/Hasan279/Icebreaker-Chatbot.git
+cd Icebreaker-Chatbot
+python -m venv .venv
+.venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 ```
 
-4. Add your ProxyCurl API key to `config.py` (optional)
+### Configuration
 
-### Usage
+Edit `config.py` and set your tokens:
 
-#### Command Line Interface
-
-Run the bot using the command line:
-
-```bash
-python main.py --mock  # Use mock data
-# OR
-python main.py --url "https://www.linkedin.com/in/username/" --api-key "your-api-key"
+```python
+HUGGINGFACE_API_TOKEN = "hf_your_token_here"
+PROXYCURL_API_KEY = "your_key_here"          # only needed for real profiles
 ```
 
-#### Web Interface
+## Usage
 
-Launch the Gradio web interface:
+### Web Interface (Gradio)
 
 ```bash
 python app.py
 ```
 
-Then open your browser to the URL shown in the terminal (typically http://127.0.0.1:7860).
+Opens at `http://127.0.0.1:5000`. Check **Use Mock Data**, click **Process Profile**, then switch to the **Chat** tab.
 
-## Development Tasks
+### CLI
 
-This is a starter template with placeholder functions. Your task is to implement the following components:
+```bash
+python main.py --mock                        # mock data
+python main.py --url "https://linkedin.com/in/someone" --api-key "KEY"
+python main.py --mock --model llama3         # use a different Ollama model
+```
 
-1. In `config.py`:
-   - Define the prompt templates for facts generation and question answering
+## Project Structure
 
-2. In `modules/data_extraction.py`:
-   - Implement the `extract_linkedin_profile` function
-
-3. In `modules/data_processing.py`:
-   - Implement the `split_profile_data` function
-   - Implement the `create_vector_database` function
-   - Implement the `verify_embeddings` function
-
-4. In `modules/llm_interface.py`:
-   - Implement the `create_watsonx_embedding` function
-   - Implement the `create_watsonx_llm` function
-   - Implement the `change_llm_model` function
-
-5. In `modules/query_engine.py`:
-   - Implement the `generate_initial_facts` function
-   - Implement the `answer_user_query` function
-
-6. Update `modules/__init__.py` to import your implemented functions
-
-7. In `main.py`:
-   - Implement the `process_linkedin` function
-   - Implement the `chatbot_interface` function
-
-8. In `app.py`:
-   - Implement the `process_profile` function
-   - Implement the `chat_with_profile` function
+```
+icebreaker/
+├── app.py                     # Gradio web UI
+├── main.py                    # CLI entry point
+├── config.py                  # All configuration values
+├── requirements.txt
+├── modules/
+│   ├── __init__.py
+│   ├── data_extraction.py     # LinkedIn profile fetching
+│   ├── data_processing.py     # Chunking & vector index
+│   ├── llm_interface.py       # LLM & embedding setup
+│   └── query_engine.py        # RAG query pipeline
+└── README.md
+```
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- IBM watsonx.ai for providing the LLM and embedding models
-- LlamaIndex for the data indexing and retrieval framework
-- ProxyCurl for LinkedIn profile data extraction
+MIT
