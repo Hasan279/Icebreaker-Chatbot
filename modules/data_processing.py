@@ -1,4 +1,4 @@
-"""Module for processing LinkedIn profile data."""
+"""Profile data chunking, embedding, and vector-store indexing."""
 
 import json
 import logging
@@ -14,14 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def split_profile_data(profile_data: Dict[str, Any]) -> List:
-    """Splits the LinkedIn profile JSON data into nodes.
-
-    Args:
-        profile_data: LinkedIn profile data dictionary.
-
-    Returns:
-        List of document nodes.
-    """
+    """Convert profile JSON into chunked document nodes."""
     logger.info("Splitting profile data into nodes...")
     profile_text = json.dumps(profile_data, indent=2)
     document = Document(text=profile_text)
@@ -34,19 +27,10 @@ def split_profile_data(profile_data: Dict[str, Any]) -> List:
 
 
 def create_vector_database(nodes: List) -> Optional[VectorStoreIndex]:
-    """Stores the document chunks (nodes) in a vector database.
-
-    Args:
-        nodes: List of document nodes to be indexed.
-
-    Returns:
-        VectorStoreIndex or None if indexing fails.
-    """
+    """Embed nodes and build an in-memory VectorStoreIndex."""
     try:
         logger.info("Creating vector database with %d nodes...", len(nodes))
         embed_model = create_ollama_embedding()
-
-        # Set embedding model globally for this index build
         Settings.embed_model = embed_model
 
         index = VectorStoreIndex(nodes, embed_model=embed_model, show_progress=True)
@@ -58,14 +42,7 @@ def create_vector_database(nodes: List) -> Optional[VectorStoreIndex]:
 
 
 def verify_embeddings(index: VectorStoreIndex) -> bool:
-    """Verify that all nodes have been properly embedded.
-
-    Args:
-        index: VectorStoreIndex to verify.
-
-    Returns:
-        True if all embeddings are valid, False otherwise.
-    """
+    """Check that every node in the index has an embedding."""
     try:
         docstore = index.docstore
         node_ids = list(docstore.docs.keys())

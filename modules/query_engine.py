@@ -1,7 +1,7 @@
-"""Module for querying indexed LinkedIn profile data."""
+"""Query engine for RAG-based Q&A over LinkedIn profile data."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from llama_index.core import VectorStoreIndex, PromptTemplate
 
@@ -12,14 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_initial_facts(index: VectorStoreIndex) -> str:
-    """Generates interesting facts about the person's career or education.
-
-    Args:
-        index: VectorStoreIndex containing the LinkedIn profile data.
-
-    Returns:
-        String containing interesting facts about the person.
-    """
+    """Generate three interesting facts about the profiled person."""
     logger.info("Generating initial facts from profile...")
     llm = create_ollama_llm(
         temperature=config.TEMPERATURE,
@@ -43,15 +36,7 @@ def generate_initial_facts(index: VectorStoreIndex) -> str:
 
 
 def answer_user_query(index: VectorStoreIndex, user_query: str) -> Any:
-    """Answers the user's question using the vector database and the LLM.
-
-    Args:
-        index: VectorStoreIndex containing the LinkedIn profile data.
-        user_query: The user's question.
-
-    Returns:
-        Response object containing the answer to the user's question.
-    """
+    """Answer a free-form question using the indexed profile data."""
     logger.info("Answering user query: %s", user_query)
     llm = create_ollama_llm(
         temperature=config.TEMPERATURE,

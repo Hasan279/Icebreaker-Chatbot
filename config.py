@@ -1,30 +1,26 @@
-"""Configuration settings for the Icebreaker Bot."""
+"""Configuration for the Icebreaker Bot."""
 
-# Ollama settings
 OLLAMA_BASE_URL = "http://localhost:11434"
 
-# Model settings
 LLM_MODEL_ID = "phi3.5"
-EMBEDDING_MODEL_ID = "BAAI/bge-small-en-v1.5"  # HuggingFace embedding model (runs locally)
+EMBEDDING_MODEL_ID = "BAAI/bge-small-en-v1.5"
 
-# ProxyCurl API settings
-PROXYCURL_API_KEY = ""  # Replace with your API key
+HUGGINGFACE_API_TOKEN = ""
 
-# Mock data URL
+PROXYCURL_API_KEY = ""
+
 MOCK_DATA_URL = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/ZRe59Y_NJyn3hZgnF1iFYA/linkedin-profile-data.json"
 
-# Query settings
 SIMILARITY_TOP_K = 5
 TEMPERATURE = 0.0
 MAX_NEW_TOKENS = 500
+CONTEXT_WINDOW = 4096
 MIN_NEW_TOKENS = 1
 TOP_K = 50
 TOP_P = 1
 
-# Node settings
 CHUNK_SIZE = 500
 
-# LLM prompt templates
 INITIAL_FACTS_TEMPLATE = """
 You are an AI assistant that provides detailed answers based on the provided context.
 

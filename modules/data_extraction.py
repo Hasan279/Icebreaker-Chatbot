@@ -1,6 +1,5 @@
-"""Module for extracting LinkedIn profile data."""
+"""LinkedIn profile data extraction via ProxyCurl API or mock JSON."""
 
-import time
 import requests
 import logging
 from typing import Dict, Optional, Any
@@ -9,7 +8,6 @@ import config
 
 logger = logging.getLogger(__name__)
 
-# Keys to strip from the profile to reduce noise in the vector store
 _UNWANTED_KEYS = {
     "similarly_named_profiles",
     "people_also_viewed",
@@ -21,7 +19,7 @@ _UNWANTED_KEYS = {
 
 
 def _clean_profile(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Remove empty values and unwanted keys from profile data."""
+    """Strip unwanted keys and empty values from raw profile data."""
     cleaned = {}
     for key, value in data.items():
         if key in _UNWANTED_KEYS:
@@ -37,15 +35,9 @@ def extract_linkedin_profile(
     api_key: Optional[str] = None,
     mock: bool = False,
 ) -> Dict[str, Any]:
-    """Extract LinkedIn profile data using ProxyCurl API or loads a premade JSON file.
+    """Fetch and clean a LinkedIn profile.
 
-    Args:
-        linkedin_profile_url: The LinkedIn profile URL to extract data from.
-        api_key: ProxyCurl API key. Required if mock is False.
-        mock: If True, loads mock data from a premade JSON file instead of using the API.
-
-    Returns:
-        Dictionary containing the LinkedIn profile data.
+    Uses mock JSON when ``mock=True``, otherwise calls the ProxyCurl API.
     """
     if mock:
         logger.info("Loading mock LinkedIn profile from: %s", config.MOCK_DATA_URL)

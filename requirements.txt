@@ -1,26 +1,17 @@
-# Core LlamaIndex stack
 llama-index-core
 llama-index-llms-ollama
-llama-index-embeddings-ollama
+llama-index-embeddings-huggingface-api
 llama-index-readers-web
 llama-hub
-
-# Optional but stable
 requests
 pydantic
-
-# UI
 gradio
 jinja2
 fastapi
 starlette
 huggingface_hub
-
-# Ollama + LangChain
 langchain
 langchain-community
 langchain-ollama
-
-# Vector DB + docs
 chromadb
 pypdf
