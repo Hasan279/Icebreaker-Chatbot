@@ -1,13 +1,17 @@
 """Configuration for the Icebreaker Bot."""
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 OLLAMA_BASE_URL = "http://localhost:11434"
 
 LLM_MODEL_ID = "phi3.5"
 EMBEDDING_MODEL_ID = "BAAI/bge-small-en-v1.5"
 
-HUGGINGFACE_API_TOKEN = ""
-
-PROXYCURL_API_KEY = ""
+HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN", "")
+PROXYCURL_API_KEY = os.getenv("PROXYCURL_API_KEY", "")
 
 MOCK_DATA_URL = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/ZRe59Y_NJyn3hZgnF1iFYA/linkedin-profile-data.json"
 
